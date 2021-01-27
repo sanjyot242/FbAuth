@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Firebase Server Auth</title>
+    <link rel="stylesheet" href="//netdna.bootstrapcdn.com/bootstrap/3.0.2/css/bootstrap.min.css">
+    <link rel="stylesheet" href="//netdna.bootstrapcdn.com/font-awesome/4.0.3/css/font-awesome.min.css">
+    <style>
+        body         { padding-top:80px; }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <div class="col-sm-6 col-sm-offset-3">
+          <h1><span class="fa fa-sign-in"></span> Signup</h1>
+            <!-- LOGIN FORM -->
+    <form id="signup">
+      <div class="form-group">
+          <label>Email</label>
+          <input type="text" class="form-control" name="email">
+      </div>
+      <div class="form-group">
+          <label>Password</label>
+          <input type="password" class="form-control" name="password">
+      </div>
+
+      <button class="btn btn-warning btn-lg">Signup</button>
+  </form>
+  <hr>
+
+  <p>Already have an account? <a href="/login">Login</a></p>
+  <p>Or go <a href="/">home</a>.</p>
+
+
+
+
+</div>
+</div>
+    
+
+      <script src="https://www.gstatic.com/firebasejs/7.14.1/firebase-app.js"></script>
+      <script src="https://www.gstatic.com/firebasejs/7.14.1/firebase-auth.js"></script>
+      <script src="https://cdn.jsdelivr.net/npm/js-cookie@rc/dist/js.cookie.min.js"></script>
+
+      <script>
+        var firebaseConfig = {
+          apiKey: "AIzaSyBkFynAekWC159T1WXf3qFmM-LtGWXJxpI",
+    authDomain: "fir-auth-52a66.firebaseapp.com",
+    projectId: "fir-auth-52a66",
+    storageBucket: "fir-auth-52a66.appspot.com",
+    messagingSenderId: "263478947442",
+    appId: "1:263478947442:web:862947250d0bb599451ceb",
+    measurementId: "G-T3B2NKJN0S",
+        };
+
+        firebase.initializeApp(firebaseConfig);
+
+        firebase.auth().setPersistence(firebase.auth.Auth.Persistence.NONE);
+
+        document
+          .getElementById("signup")
+          .addEventListener("submit", (event) => {
+            event.preventDefault();
+            const login = event.target.email.value;
+            const password = event.target.password.value;
+
+            firebase
+              .auth()
+              .createUserWithEmailAndPassword(login, password)
+              .then(({ user }) => {
+                return user.getIdToken().then((idToken) => {
+                  return fetch("/sessionLogin", {
+                    method: "POST",
+                    headers: {
+                      Accept: "application/json",
+                      "Content-Type": "application/json",
+                      "CSRF-Token": Cookies.get("XSRF-TOKEN"),
+                    },
+                    body: JSON.stringify({ idToken }),
+                  });
+                });
+              })
+              .then(() => {
+                return firebase.auth().signOut();
+              })
+              .then(() => {
+                window.location.assign("/profile");
+              });
+            return false;
+          });
+      </script>
+  </body>
+</html>
